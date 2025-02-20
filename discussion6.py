@@ -1,11 +1,11 @@
 import unittest
 import os
-
+import csv
 
 def load_csv(f):
     '''
     Params: 
-        f, name or path or CSV file: string
+        f, name or path of CSV file: string
 
     Returns:
         nested dict structure from csv
@@ -14,10 +14,24 @@ def load_csv(f):
     
     Note: Don't strip or otherwise modify strings. Don't change datatypes from strings. 
     '''
-
     base_path = os.path.abspath(os.path.dirname(__file__))
     full_path = os.path.join(base_path, f)
-    # use this 'full_path' variable as the file that you open
+
+    data = {}
+
+    with open(full_path, newline='', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        header = next(reader)  # Read the header row (first row)
+
+        for row in reader:
+            year, month, value = row  # Assuming CSV has three columns: Year, Month, Value
+
+            if year not in data:
+                data[year] = {}
+
+            data[year][month] = value  # Store value as a string per instructions
+
+    return data
 
 def get_annual_max(d):
     '''
@@ -31,7 +45,14 @@ def get_annual_max(d):
     Note: Don't strip or otherwise modify strings. Do not change datatypes except where necessary.
         You'll have to change vals to int to compare them. 
     '''
-    pass
+    max_list = []
+
+    for year, months in d.items():
+        max_month = max(months, key=lambda m: int(months[m]))  # Find month with max value
+        max_value = int(months[max_month])  # Convert to int for return
+        max_list.append((year, max_month, max_value))
+
+    return max_list
 
 def get_month_avg(d):
     '''
@@ -45,11 +66,17 @@ def get_month_avg(d):
     Note: Don't strip or otherwise modify strings. Do not change datatypes except where necessary. 
         You'll have to make the vals int or float here and round the avg to pass tests.
     '''
-    pass
+    avg_dict = {}
+
+    for year, months in d.items():
+        values = [int(value) for value in months.values()]  # Convert values to integers
+        avg_dict[year] = round(sum(values) / len(values))  # Compute rounded average
+
+    return avg_dict
 
 class dis7_test(unittest.TestCase):
     '''
-    you should not change these test cases!
+    You should not change these test cases!
     '''
     def setUp(self):
         self.flight_dict = load_csv('daily_visitors.csv')
@@ -71,3 +98,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
